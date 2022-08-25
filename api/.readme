@@ -1,0 +1,65 @@
+# ¿Cómo exactamente funciona la API?
+* Paso 1: Obtengo de la base de datos (o de donde se envíe) una lista con las cuotas o artículos que quiero que el cliente pague.
+* Paso 2: Defino: ¿Quiero que la persona pague cada cuota por separado o todos a la vez? Si debe ser todo en un pago utilizo la función "unaPreferenciaPorVariasCuotas", si cada uno se debe pagar aparte uso "unaPreferenciaPorCadaCuota"
+* Paso 3: La función elegida genera una/s preferencias, que son enviadas a la API de MP mediante el SDK y se recibe como respuesta: el mismo objeto MÁS ciertos datos de mercado pago, incluido el init_point y la ID de las preferencias enviadas en MP.
+* Paso 4: Se envía esta ID al front end y se pasa como argumento a una función. Más detalles en: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/integrate-checkout-pro .
+* Paso 5: Una vez que el usuario paga lo que debe en MP, MP notifica a un punto (especificado en las preferencias) que se realizó una transacción. Aunque sea engañoso, esta notificación no incluye si el pago fué exitoso o no, incluye una ID de la transacción la cual debemos pasar como argumento en el siguiente Curl:
+    curl -X GET \
+      'https://api.mercadopago.com/v1/payments/{id}' \
+      -H 'Authorization: Bearer YOUR_ACCESS_TOKEN' 
+Documentación de esta request en: https://www.mercadopago.com.ar/developers/es/reference/payments/_payments_id/get
+Más detalles sobre los Curl más adelante
+* Paso 6: Si el campo "status" == "approved", entonces podemos registrar la operación como exitosa.
+
+# Preferencias
+
+## ¿Qué es?
+* La preferencia es un objeto con múltiples campos que podemos adaptar para nuestro uso específico. El objeto se encuentra en el archivo preferencias.py y ahí podemos ver cada campo con contexto. El campo más relevante es "items", una lista que contiene a su vez los objetos que se van a cobrar al usuario.
+
+## Documentación oficial:
+* https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/checkout-customization/preferences
+
+## Preferencias Notables
+
+### payment_methods
+    "payment_methods": {
+        "excluded_payment_methods": lista de diccionarios, ejemplo: "id": "master",
+        "excluded_payment_types": lista de diccionarios, ejemplo: "id": "ticket",
+        "installments": son las cuotas máximas aceptadas,
+        "porpouse": booleano, requeriría que se tenga una cuenta de mercado pago,
+    },
+
+### binary_mode
+* El modo binario reduce las capacidades de pago de los usuarios, solo da success o failure, no pending o etc.
+
+### expiration_date_from y expiration_date_to 
+* Se recomienda en la documentación dar 3 días por los pagos en efectivo, que impactan a las 48hs.
+* Esos datos están como ejemplos, cada vez que se crea una preferencia se reemplazan por los actuales.
+
+### IDEA: si no puedo recibir la notificación de MP en "notification_url" 
+* Primero, activo modo binario
+* Segundo, NO paso la id INTERNA PROPIA de la transacción que da la DB al front, si no que envío a ml como url de redirección de success algo como mipagina.com/confirmacion/id/1a_s2d42q5s_22-8-22
+* El usuario no tiene acceso a este link, solo es enviado a MP.
+* Al acceder a esa página, se comprueba que esa ID es de esta cuenta y está impaga.
+* Si es válido, hace un post a django que cambia el estado en la DB a pago de esa cuota.
+
+
+# Funciones: unaPreferenciaPorCadaCuota y unaPreferenciaPorVariasCuotas
+
+## Entrada y Salida
+* Requieren una devuelve UNA preferencia con el campo "items" como una lista de las cuotas.
+* unaPreferenciaPorCadaCuota devuelve un objeto de preferencias POR CADA cuota o artículo de la lista que se le dió.
+* unaPreferenciaPorVariasCuotas devuelve UN SOLO objeto de preferencias con una lista con los items dentro.
+
+* Las 2 funciones cumplen 2 funciones distintas dado que, si no tenemos manera de separar los productos y los queremos pagar a parte tenemos que enviarlos en requests separadas.
+
+## Notas
+* La manera en la que se transforma la entrada debe adapatarse a la lista que se le dé, si no llegan elementos obligatorios como quantity se los puede asignar a 1.
+* No sería ideal crear siempre nuevos links, podría ser buena idea anotar en la DB el link asociado al pago y el vencimiento. Si vence en las prox 48hs, se crea uno nuevo en caso que el usuario pague en efectivo. O se puede excluir al efectivo y se reemplaza al anterior. Igualmente, puede ser una solución más complicada de implementarse que lo que parece por el uso de timedelta() .
+
+# Crear un Curl
+Para hacer un get: curl www.tupagina.com
+Para guardar la página: curl -o output.html tupagina.com
+Para especificar que estás llamando a una página en específico para cambiar el orden de los argumentos: curl -s www.tupagina.com
+Para hacer un post, tenemos que enviar tag de --data o especificar con -X "POST" o -request. Al definir data automáticamente se debería cambiar. Nota, añadimos el tag ^ que indica continuación también. Ejemplo:
+curl --data '{"id":"12345","segundodato":"asd"}' ^ www.tupagina.com
