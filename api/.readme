@@ -1,15 +1,12 @@
-# ¿Cómo exactamente funciona la API?
+# ¿Cómo exactamente funciona la API y esta integración?
+Definí en pasos los procesos requeridos para realizar una transacción y cómo están implementados.
 * Paso 1: Obtengo de la base de datos (o de donde se envíe) una lista con las cuotas o artículos que quiero que el cliente pague.
 * Paso 2: Defino: ¿Quiero que la persona pague cada cuota por separado o todos a la vez? Si debe ser todo en un pago utilizo la función "unaPreferenciaPorVariasCuotas", si cada uno se debe pagar aparte uso "unaPreferenciaPorCadaCuota"
-* Paso 3: La función elegida genera una/s preferencias, que son enviadas a la API de MP mediante el SDK y se recibe como respuesta: el mismo objeto MÁS ciertos datos de mercado pago, incluido el init_point y la ID de las preferencias enviadas en MP.
-* Paso 4: Se envía esta ID al front end y se pasa como argumento a una función. Más detalles en: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/integrate-checkout-pro .
-* Paso 5: Una vez que el usuario paga lo que debe en MP, MP notifica a un punto (especificado en las preferencias) que se realizó una transacción. Aunque sea engañoso, esta notificación no incluye si el pago fué exitoso o no, incluye una ID de la transacción la cual debemos pasar como argumento en el siguiente Curl:
-    curl -X GET \
-      'https://api.mercadopago.com/v1/payments/{id}' \
-      -H 'Authorization: Bearer YOUR_ACCESS_TOKEN' 
-Documentación de esta request en: https://www.mercadopago.com.ar/developers/es/reference/payments/_payments_id/get
-Más detalles sobre los Curl más adelante
-* Paso 6: Si el campo "status" == "approved", entonces podemos registrar la operación como exitosa.
+* Paso 3: La función elegida genera una/s preferencias (detalles debajo), que son enviadas a la API de MP mediante el SDK y se recibe como respuesta: el mismo objeto MÁS ciertos datos de mercado pago, incluido el init_point y la ID de las preferencias enviadas en MP.
+* Paso 4: Se envía esta ID al front end y se pasa como argumento a una función, que genera un botón con link. Más detalles en: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/integrate-checkout-pro (En la sección donde se describe el HTML).
+* Paso 5: Una vez que el usuario paga lo que debe en MP, MP notifica a un punto (especificado en las preferencias) que se realizó una transacción. En esta request podemos encontrar si la operación fue exitosa o no en el campo "status". Si queda pendiente, tenemos que enviar la id devuelta a MP para checkear si se acreditó un tiempo después.
+Nota: el campo "status" tiene las siguientes respuestas posibles: "pending", "approved", "authorized", "in_process", "in_mediation", "rejected", "cancelled", "refunded", "charged_back". En teoría podemos programar para considerar todos estos casos, aunque podemos reducir los casos posibles definiendo en las preferencias "binary_mode": True . Más detalles de esta opción en preferencias.
+
 
 # Preferencias
 
@@ -21,6 +18,9 @@ Más detalles sobre los Curl más adelante
 
 ## Preferencias Notables
 
+### items
+* El campo "items" es una lista de las diferentes cuotas o artículos que se desean pagar EN UN SOLO PAGO. Pueden haber múltiples productos en el campo pero a la hora de pagar se suman los precios y no se pueden separar.
+
 ### payment_methods
     "payment_methods": {
         "excluded_payment_methods": lista de diccionarios, ejemplo: "id": "master",
@@ -30,18 +30,11 @@ Más detalles sobre los Curl más adelante
     },
 
 ### binary_mode
-* El modo binario reduce las capacidades de pago de los usuarios, solo da success o failure, no pending o etc.
+* El modo binario reduce las capacidades de pago de los usuarios, solo da approved o cancelled, no pending o etc.
 
 ### expiration_date_from y expiration_date_to 
 * Se recomienda en la documentación dar 3 días por los pagos en efectivo, que impactan a las 48hs.
 * Esos datos están como ejemplos, cada vez que se crea una preferencia se reemplazan por los actuales.
-
-### IDEA: si no puedo recibir la notificación de MP en "notification_url" 
-* Primero, activo modo binario
-* Segundo, NO paso la id INTERNA PROPIA de la transacción que da la DB al front, si no que envío a ml como url de redirección de success algo como mipagina.com/confirmacion/id/1a_s2d42q5s_22-8-22
-* El usuario no tiene acceso a este link, solo es enviado a MP.
-* Al acceder a esa página, se comprueba que esa ID es de esta cuenta y está impaga.
-* Si es válido, hace un post a django que cambia el estado en la DB a pago de esa cuota.
 
 
 # Funciones: unaPreferenciaPorCadaCuota y unaPreferenciaPorVariasCuotas

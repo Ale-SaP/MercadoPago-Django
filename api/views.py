@@ -14,7 +14,7 @@ environ.Env.read_env()
 import requests
 from datetime import datetime, timedelta
 import mercadopago
-sdk = mercadopago.SDK()
+sdk = mercadopago.SDK(env("TEST_TOKEN"))
 
 #Preferencias
 from .preferencias import preferencias
@@ -117,11 +117,11 @@ def enviarRequestAMP(request):
     listaAEnviar = unaPreferenciaPorVariasCuotas(ejemploPropio)
     listaDeDatosRecibidos = []
 
-    #preference_response = sdk.preference().create(listaAEnviar)
-    #preference = preference_response["response"]
-    #listaDeDatosRecibidos.append(preference)
+    preference_response = sdk.preference().create(listaAEnviar)
+    preference = preference_response["response"]
+    listaDeDatosRecibidos.append(preference)
 
-    return Response({"todasLasRequest": listaAEnviar, "loRecibido": listaDeDatosRecibidos})
+    return Response({"loRecibido": listaDeDatosRecibidos})
 
 def frontEndIntegration(request):
     return render(request, "api/index.html")
@@ -130,9 +130,10 @@ def frontEndIntegration(request):
 def recibirRequestDeMP(request):
     datos_recibidos = request.data
     status = datos_recibidos["status"]
+    print(datos_recibidos)
     if status != "approved":
-        id = datos_recibidos["id"]
+        print(status)
         #Buscar con Curl la transacción de la id y si cambió el status lo registramos en la DB.
     else:
         print(status)
-        #Registro en la DB que fue exitosa la transacción.
+    #Registro en la DB que fue exitosa la transacción.

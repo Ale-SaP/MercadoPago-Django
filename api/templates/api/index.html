@@ -7,7 +7,26 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>It rendered!</h1>
+    <h1>Renderizó!</h1>
+    <div class="cho-container"></div>
+    <!-- Añadido de MP -->
+
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+        const mp = new MercadoPago('TEST-852903093852847-082123-7358a38486b2889f46bf664c1a5779f1-797773687', {
+        locale: 'en-US'
+    });
+
+    mp.checkout({
+        preference: {
+        id: "797773687-b88cbd12-a7d2-4abe-a978-a671ad2ed6da"
+        },
+        render: {
+            container: '.cho-container',
+            label: 'Pay',
+    }
+  });
+</script>
     
 </body>
 </html>
