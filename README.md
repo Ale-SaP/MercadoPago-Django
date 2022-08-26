@@ -52,10 +52,3 @@ Nota: el campo "status" tiene las siguientes respuestas posibles: "pending", "ap
 ## Notas
 * La manera en la que se transforma la entrada debe adapatarse a la lista que se le dé, si no llegan elementos obligatorios como quantity se los puede asignar a 1.
 * No sería ideal crear siempre nuevos links, podría ser buena idea anotar en la DB el link asociado al pago y el vencimiento. Si vence en las prox 48hs, se crea uno nuevo en caso que el usuario pague en efectivo. O se puede excluir al efectivo y se reemplaza al anterior. Igualmente, puede ser una solución más complicada de implementarse que lo que parece por el uso de timedelta() .
-
-# Crear un Curl
-Para hacer un get: curl www.tupagina.com
-Para guardar la página: curl -o output.html tupagina.com
-Para especificar que estás llamando a una página en específico para cambiar el orden de los argumentos: curl -s www.tupagina.com
-Para hacer un post, tenemos que enviar tag de --data o especificar con -X "POST" o -request. Al definir data automáticamente se debería cambiar. Nota, añadimos el tag ^ que indica continuación también. Ejemplo:
-curl --data '{"id":"12345","segundodato":"asd"}' ^ www.tupagina.com
