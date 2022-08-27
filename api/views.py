@@ -38,7 +38,6 @@ ejemploPropio = [
         }
     ]
 
-#Detalles en readme
 def unaPreferenciaPorCadaCuota(lista):
     cantidadDeCuotas = len(lista)
     todasLasRequests = []
@@ -123,9 +122,6 @@ def enviarRequestAMP(request):
 
     return Response({"loRecibido": listaDeDatosRecibidos})
 
-def frontEndIntegration(request):
-    return render(request, "api/index.html")
-
 @api_view(['POST'])
 def recibirRequestDeMP(request):
     datos_recibidos = request.data
@@ -137,3 +133,6 @@ def recibirRequestDeMP(request):
     else:
         print(status)
     #Registro en la DB que fue exitosa la transacción.
+
+def frontEndIntegration(request):
+    return render(request, "api/index.html")
