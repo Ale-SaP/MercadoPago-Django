@@ -26,7 +26,7 @@ ejemploPropio = [
                     "currency_id": "ARS",
                     "description": "7/2022",
                     "quantity": 1,
-                    "unit_price": 200
+                    "unit_price": 1
         }, 
         {
                     "id": 2,
@@ -34,7 +34,7 @@ ejemploPropio = [
                     "currency_id": "ARS",
                     "description": "8/2022",
                     "quantity": 2,
-                    "unit_price": 400
+                    "unit_price": 5
         }
     ]
 
@@ -123,16 +123,18 @@ def enviarRequestAMP(request):
     return Response({"loRecibido": listaDeDatosRecibidos})
 
 @api_view(['POST'])
-def recibirRequestDeMP(request):
+def recibirNotificacion(request):
     datos_recibidos = request.data
-    status = datos_recibidos["status"]
-    print(datos_recibidos)
-    if status != "approved":
-        print(status)
-        #Buscar con Curl la transacción de la id y si cambió el status lo registramos en la DB.
+
+    url = datos_recibidos["resource"]
+    recibo = request.get(url, headers={"Authorization": "Bearer " + env("TEST_TOKEN")}) #Reemplazo el test token por el production token
+    recibo = recibo.text
+    status_details = recibo["status_details"]
+    if status_details == "Accredited":
+        print(status_details) #Registro en la DB que fué exitoso
     else:
-        print(status)
-    #Registro en la DB que fue exitosa la transacción.
+        print(status_details) #Registro en la DB que NO fué exitoso
+
 
 def frontEndIntegration(request):
     return render(request, "api/index.html")

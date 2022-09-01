@@ -1,15 +1,15 @@
 preferencias = {
     "back_urls" : {
-        "success": "https://www.success.com", # Si se envía correctamente los datos a mercado libre, redirecciona acá
-        "failure": "http://www.failure.com", # Si falla, acá
-        "pending": "http://www.pending.com" # Si queda pendiente, acá 
+        "success": "https://www.google.com/", # Si se envía correctamente los datos a mercado libre, redirecciona acá
+        "failure": "https://www.instagram.com/", # Si falla, acá
+        "pending": "https://www.mozilla.org/es-AR/" # Si queda pendiente, acá 
     },
 
     "auto_return": "approved", # Volver a la página automaticamente
 
     #"payment_methods" en el readme
 
-    "notification_url": "https://www.your-site.com/ipn", # URL a la cual te gustaría recibir notificaciones de pagos.
+    "notification_url": "https://hookb.in/7ZkMyO93zrtWXDmW3lZD", # URL a la cual te gustaría recibir notificaciones de pagos.
     #Alternativa en readme
     
     "binary_mode": False, #En readme
