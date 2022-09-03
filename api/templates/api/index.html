@@ -13,13 +13,13 @@
 
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <script>
-        const mp = new MercadoPago('TEST-f4383126-8eb0-4a9e-bffe-3776df43b536', {
+        const mp = new MercadoPago('TOKEN_PUBLICO', {
         locale: 'es-AR'
     });
 
     mp.checkout({
         preference: {
-        id: "797773687-eae18ce1-9498-41f1-8245-5ba6c1fe7236"
+        id: "PREFERENCE_ID"
         },
         render: {
             container: '.cho-container',

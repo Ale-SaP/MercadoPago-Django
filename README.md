@@ -6,7 +6,7 @@ Definí en pasos los procesos requeridos para realizar una transacción y cómo 
 * Paso 1: Obtengo de la base de datos (o de donde se envíe) una lista con las cuotas o artículos que quiero que el cliente pague.
 * Paso 2: Defino: ¿Quiero que la persona pague cada cuota por separado o todos a la vez? Si debe ser todo en un pago utilizo la función "unaPreferenciaPorVariasCuotas", si cada uno se debe pagar aparte uso "unaPreferenciaPorCadaCuota".
 * Paso 3: La función elegida genera una/s preferencias (detalles sobre las preferencias debajo), que son enviadas a la API de MP mediante el SDK y se recibe como respuesta: el mismo objeto MÁS ciertos datos de mercado pago, incluido el init_point y la id de las preferencias enviadas en MP.
-* Paso 4: Se envía esta id al front end y se pasa como argumento a una función del sdk, que genera un botón que redirecciona. Intenté utilizar el "init_point" para acceder al pago pero da error. Más detalles en: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/integrate-checkout-pro (En la sección donde se describe el HTML).
+* Paso 4: Se envía esta "id" al front end (+ el user token) y se pasa como argumento a una función del sdk, que genera un botón que redirecciona. Intenté utilizar el "init_point" para acceder al pago pero da error. Más detalles en: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/integrate-checkout-pro (En la sección donde se describe el HTML).
 * Paso 5: Una vez que el usuario paga lo que debe en MP, MP notifica a un punto (especificado en las preferencias) que se realizó una transacción. En esta request podemos encontrar el campo "resource", un link al recibo; accedemos a este y lo registramos en la base de datos. Todo esto se realiza en la función "recibirNotificacion", explicada debajo con más detalle.
 
 * Nota: el campo "status" tiene campos generales, mientras que "status_details" es más específico y que nos dá mas opciones. Documentación de estos campos en: https://www.mercadopago.com.ar/developers/es/reference/payments/_payments_id/get .
@@ -74,7 +74,12 @@ Definí en pasos los procesos requeridos para realizar una transacción y cómo 
 * Este recibo lo podemos registrar en una base de datos o como deseemos.
 
 # Testing
-* Es necesario, primero que todo crear nuestra app en el dashboard. Todavía no generamos las creedenciales "reales", solo nos interesa la key de prueba y la key pública.
+* Es necesario, primero que todo crear nuestra app en el dashboard. Donde nos pregunta sobre la integración, seleccionamos la opcion "Checkout Pro". Todavía no generamos las creedenciales "reales", solo nos interesa la key de prueba y la key pública.
 * Dentro de la pestaña de "Tus integraciones" selecciono "Cuentas de prueba" y creo una nueva cuenta de prueba, le asigno los fondos que necesito para las pruebas.
 * Accedemos a la ruta "http://127.0.0.1:8000/api/mp/", que llama a la función "enviarRequestAMP"; previamente introducimos un ejemplo para "unaPreferenciaPorCadaCuota" o "unaPreferenciaPorTodasLasCuotas". Copiamos el valor de "id" (o lo pasamos de alguna manera al front-end o template de Django) y el token de prueba. Un template de ejemplo está en index.html .
 * Una vez en la página "http://127.0.0.1:8000/api/render/" hacemos click en el botón y accedemos a MP. Rellenamos los datos con nuestro usuario de prueba y las tarjetas de crédito de prueba (https://www.mercadopago.com.ar/developers/es/docs/checkout-api/integration-test/test-cards); ponemos nuestro documento y mail (el mail no debe ser el asociado a la cuenta). Una vez que se realiza la transacción recibimos la notificación y completamos el ciclo.
+
+# Producción
+* Una vez que querramos pasar a producción, simplemente debemos ir al dashboard y a la pestaña de nuestra aplicación/implementación, y generar tokens de producción.
+* Los reemplazamos en el ENV.
+* Hacemos una comprobación y hacemos algún pago mínimo para testear si todo está funcional.

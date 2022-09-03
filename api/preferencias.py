@@ -9,7 +9,7 @@ preferencias = {
 
     #"payment_methods" en el readme
 
-    "notification_url": "https://hookb.in/7ZkMyO93zrtWXDmW3lZD", # URL a la cual te gustaría recibir notificaciones de pagos.
+    "notification_url": "https://hookb.in/Xk11NJjOGNcDkmwD3l3B", # URL a la cual te gustaría recibir notificaciones de pagos.
     #Alternativa en readme
     
     "binary_mode": False, #En readme

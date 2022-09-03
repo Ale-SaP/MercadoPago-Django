@@ -127,6 +127,8 @@ def recibirNotificacion(request):
     datos_recibidos = request.data
 
     url = datos_recibidos["resource"]
+
+    #Ejemplo de como funciona esta request en el archivo "sendRequest.py"
     recibo = request.get(url, headers={"Authorization": "Bearer " + env("TEST_TOKEN")}) #Reemplazo el test token por el production token
     recibo = recibo.text
     status_details = recibo["status_details"]
